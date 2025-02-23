@@ -1,45 +1,40 @@
 import streamlit as st
-import pandas as pd
-import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
+# --- Google Sheets Setup ---
+def connect_to_gsheet():
+    scope = ["https://spreadsheets.google.com/feeds",
+             "https://www.googleapis.com/auth/drive"]
+    
+    # Directly use secrets from Streamlit
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gsheet"], scope)
+    return gspread.authorize(creds)
 
-# File paths - modify these if needed
-mainpath = os.path.dirname(__file__)
-CUSTOMER_FILE  = os.path.join(mainpath,r"custname.xlsx")
-RATING_FILE = os.path.join(mainpath,r"rating.xlsx")
-trial = os.path.join(mainpath , r"trial.txt")
-with open(trial, 'w') as file:
-    file.write("Hello World")
+# Your specific Google Sheet ID from the URL
+SPREADSHEET_ID = "1a_zt-I3cyjeQ5VlPRLifXyWVDHmg4cAx4jEXsclm7qw"
 
 def save_customer_info(name, email):
-    """Save customer name and email to Excel file"""
-    data = {"Customer Name": [name], "Email": [email]}
-    new_df = pd.DataFrame(data)
-    
-    if os.path.exists(CUSTOMER_FILE):
-        existing_df = pd.read_excel(CUSTOMER_FILE)
-        updated_df = pd.concat([existing_df, new_df], ignore_index=True)
-    else:
-        updated_df = new_df
-    
-    updated_df.to_excel(CUSTOMER_FILE, index=False)
+    """Save customer info to Google Sheet"""
+    try:
+        client = connect_to_gsheet()
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("Customers")
+        sheet.append_row([name, email])
+    except Exception as e:
+        st.error(f"Error saving data: {str(e)}")
 
 def update_rating_counts(rating):
-    """Update rating counts in Excel file"""
+    """Update rating counts in Google Sheet"""
     try:
-        if os.path.exists(RATING_FILE):
-            df = pd.read_excel(RATING_FILE)
-        else:
-            df = pd.DataFrame({
-                "Rating": ["Excellent", "Good", "Average", "Bad", "Poor"],
-                "Count": [0, 0, 0, 0, 0]
-            })
+        client = connect_to_gsheet()
+        sheet = client.open_by_key(SPREADSHEET_ID).worksheet("Ratings")
         
-        df.loc[df["Rating"] == rating, "Count"] += 1
-        df.to_excel(RATING_FILE, index=False)
+        # Find and update the rating count
+        cell = sheet.find(rating)
+        current_count = int(sheet.cell(cell.row, 2).value)
+        sheet.update_cell(cell.row, 2, current_count + 1)
     except Exception as e:
         st.error(f"Error updating ratings: {str(e)}")
-
 def main():
     st.set_page_config(page_title="We Value Your Feedback - Green Medicals", layout="centered")
     
@@ -92,8 +87,6 @@ def main():
     if "track_rating" in st.query_params:
         rating = st.query_params["track_rating"]
         update_rating_counts(rating)
-        
-        # Clean up query parameters after processing
         st.query_params.update(track_rating=None)
 
     st.markdown("---")
