@@ -7,10 +7,12 @@ def connect_to_gsheet():
     scope = ["https://spreadsheets.google.com/feeds",
              "https://www.googleapis.com/auth/drive"]
     
-    # Directly use secrets from Streamlit
+    # Debug: Print secrets
+    st.write("Secrets:", st.secrets["gsheet"])
+    
+    # Use Streamlit secrets for credentials
     creds = ServiceAccountCredentials.from_json_keyfile_dict(st.secrets["gsheet"], scope)
     return gspread.authorize(creds)
-
 # Your specific Google Sheet ID from the URL
 SPREADSHEET_ID = "1a_zt-I3cyjeQ5VlPRLifXyWVDHmg4cAx4jEXsclm7qw"
 
