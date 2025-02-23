@@ -7,7 +7,9 @@ import os
 mainpath = os.path.dirname(__file__)
 CUSTOMER_FILE  = os.path.join(mainpath,r"custname.xlsx")
 RATING_FILE = os.path.join(mainpath,r"rating.xlsx")
-
+trial = os.path.join(mainpath , r"trial.txt")
+with open(trial, 'w') as file:
+    file.write("Hello World")
 
 def save_customer_info(name, email):
     """Save customer name and email to Excel file"""
