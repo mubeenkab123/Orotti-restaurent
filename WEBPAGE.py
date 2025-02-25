@@ -44,7 +44,7 @@ def update_rating_counts(rating):
     except Exception as e:
         st.error(f"Error updating ratings: {str(e)}")
 def main():
-    st.set_page_config(page_title="We Value Your Feedback - Green Medicals", layout="centered")
+    st.set_page_config(page_title="We Value Your Feedback - Yourhotelname", layout="centered")
     
     st.title("Thank You for Choosing Yourhotelname!")
     st.markdown("---")
