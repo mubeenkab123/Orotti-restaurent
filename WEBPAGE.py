@@ -28,10 +28,19 @@ def update_rating_counts(rating):
         client = connect_to_gsheet()
         sheet = client.open_by_key(SPREADSHEET_ID).worksheet("Ratings")
         
-        # Find and update the rating count
-        cell = sheet.find(rating)
+        # Find the rating cell
+        try:
+            cell = sheet.find(rating)
+        except gspread.exceptions.CellNotFound:
+            st.error(f"Rating '{rating}' not found in the 'Ratings' sheet. Please ensure it exists.")
+            return
+        except gspread.exceptions.MultipleObjectsFound:
+            st.error(f"Multiple entries for '{rating}' found. Ensure ratings are unique.")
+            return
+        
         current_count = int(sheet.cell(cell.row, 2).value)
         sheet.update_cell(cell.row, 2, current_count + 1)
+        st.toast(f"Updated {rating} count!")  # Visual feedback
     except Exception as e:
         st.error(f"Error updating ratings: {str(e)}")
 def main():
@@ -58,26 +67,27 @@ def main():
     # Create rating buttons with proper parameter tracking
     for label, color, rating, link in rating_buttons:
         st.markdown(f"""
-        <a href='{link}' target='_blank' onclick='trackRating("{rating}")'
-           style='display: block; text-align: center; background-color: {color}; 
-           padding: 14px; border-radius: 5px; color: black; 
-           text-decoration: none; font-weight: bold; margin: 10px 0;'
-           onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
-           {label}
+        <a href='{link}' target='_blank' 
+            onclick='event.preventDefault(); trackRating("{rating}", "{link}")'
+            style='display: block; text-align: center; background-color: {color}; 
+            padding: 14px; border-radius: 5px; color: black; 
+            text-decoration: none; font-weight: bold; margin: 10px 0;'
+            onmouseover="this.style.opacity=0.8" onmouseout="this.style.opacity=1">
+            {label}
         </a>
         """, unsafe_allow_html=True)
 
     # JavaScript to track rating clicks
     st.markdown("""
     <script>
-    function trackRating(rating) {
-        // Add temporary query parameter
-        const url = new URL(window.location);
+    function trackRating(rating, link) {
+        // Send the rating to the server
+        const url = new URL(window.location.href);
         url.searchParams.set('track_rating', rating);
-        window.history.replaceState({}, '', url);
-        
-        // Send beacon to ensure tracking
-        navigator.sendBeacon(window.location.href);
+        navigator.sendBeacon(url.toString());
+
+        // Open the link after a short delay
+        setTimeout(() => window.open(link, '_blank'), 100);
     }
     </script>
     """, unsafe_allow_html=True)
