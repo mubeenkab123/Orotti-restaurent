@@ -99,6 +99,7 @@ def main():
         st.query_params.update(track_rating=None)
 
     st.markdown("---")
+    st.write("Your feedback is valuable to us. Please take a few moments to share your experience so we can continue to improve our service.")
     
     
 
