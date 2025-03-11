@@ -46,7 +46,7 @@ def update_rating_counts(rating):
 def main():
     st.set_page_config(page_title="We Value Your Feedback - Yourhotelname", layout="centered")
     
-    st.title("Thank You for Choosing Yourhotelname!")
+    st.title("Thank You for Choosing Orotti Restaurent!")
     st.markdown("---")
     
     st.subheader("Rate Your Experience")
