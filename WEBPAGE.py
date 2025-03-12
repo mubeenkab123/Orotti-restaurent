@@ -77,26 +77,6 @@ def main():
         </a>
         """, unsafe_allow_html=True)
 
-    # JavaScript to track rating clicks
-    st.markdown("""
-    <script>
-    function trackRating(rating, link) {
-        // Send the rating to the server
-        const url = new URL(window.location.href);
-        url.searchParams.set('track_rating', rating);
-        navigator.sendBeacon(url.toString());
-
-        // Open the link after a short delay
-        setTimeout(() => window.open(link, '_blank'), 100);
-    }
-    </script>
-    """, unsafe_allow_html=True)
-
-    # Handle rating tracking
-    if "track_rating" in st.query_params:
-        rating = st.query_params["track_rating"]
-        update_rating_counts(rating)
-        st.query_params.update(track_rating=None)
 
     st.markdown("---")
     st.write("Your feedback is valuable to us. Please take a few moments to share your experience so we can continue to improve our service.")
